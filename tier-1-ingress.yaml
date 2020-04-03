@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tier-1-ingress
+  annotations:
+     kubernetes.io/ingress.class: "tier-1-vpx"
+spec:
+  tls:
+  - secretName: hipster
+  rules:
+  - host: hipster-citrix-demo.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: cpx-service
+          servicePort: 80

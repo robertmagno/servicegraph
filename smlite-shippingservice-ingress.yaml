@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-shippingservice
+  annotations:
+     kubernetes.io/ingress.class: "tier-2-cpx"
+     ingress.citrix.com/insecure-service-type: "tcp"
+     ingress.citrix.com/insecure-port: "50052"
+spec:
+    backend:
+        serviceName: shippingservice-app
+        servicePort: 50052
