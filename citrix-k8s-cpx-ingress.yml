@@ -46,7 +46,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cpx-ingress-k8s-role
-  namespace: test
+  namespace: sgdemo
 apiVersion: rbac.authorization.k8s.io/v1
 
 ---
@@ -55,7 +55,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cpx-ingress-k8s-role
-  namespace: test
+  namespace: sgdemo
 
 ---
 
@@ -78,7 +78,7 @@ spec:
       serviceAccountName: cpx-ingress-k8s-role
       containers:
         - name: cpx-ingress
-          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-47.103"
+          image: "quay.io/citrix/citrix-k8s-cpx-ingress:13.0-52.24"
           securityContext:
              privileged: true
           env:
@@ -113,6 +113,8 @@ spec:
             value: "SIDECAR"
           - name: "NS_ENABLE_MONITORING"
             value: "YES"
+          - name: "NS_LOGPROXY"
+            value: "192.168.3.20"
           - name: POD_NAME
             valueFrom:
               fieldRef:
