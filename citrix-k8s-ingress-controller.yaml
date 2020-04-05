@@ -46,7 +46,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: cic-k8s-role
-  namespace: test
+  namespace: sgdemo
 
 ---
 
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cic-k8s-role
-  namespace: test
+  namespace: sgdemo
 
 ---
 apiVersion: apps/v1
@@ -93,6 +93,8 @@ spec:
          # VIP of the Citrix ADC VPX
          - name: "NS_VIP"
            value: "192.168.3.31"
+         - name: "NS_LOGPROXY"
+           value: "192.168.3.20"
         args:
           - --ingress-classes
             tier-1-vpx
