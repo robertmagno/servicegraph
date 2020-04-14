@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-checkoutservice
+  annotations:
+   kubernetes.io/ingress.class: "tier-2-cpx"
+   ingress.citrix.com/insecure-port: "5050"
+   ingress.citrix.com/secure-backend: '{"checkoutservice-app": "True"}'
+spec:
+  rules:
+  - host: checkoutservice.default.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          serviceName: checkoutservice-app
+          servicePort: 5050
+  - host: checkoutservice
+    http:
+      paths:
+      - backend:
+          serviceName: checkoutservice-app
+          servicePort: 5050
