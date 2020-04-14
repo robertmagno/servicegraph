@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-cartservice
+  annotations:
+   kubernetes.io/ingress.class: "tier-2-cpx"
+   ingress.citrix.com/insecure-port: "7070"
+   ingress.citrix.com/secure-backend: '{"cartservice-app": "True"}'
+spec:
+  rules:
+  - host: cartservice.default.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          serviceName: cartservice-app
+          servicePort: 7070
+  - host: cartservice
+    http:
+      paths:
+      - backend:
+          serviceName: cartservice-app
+          servicePort: 7070
