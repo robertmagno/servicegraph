@@ -11,10 +11,10 @@ spec:
       paths:
       - backend:
           serviceName: frontend-app
-          servicePort: 80
+          servicePort: 8080
   - host: frontend
     http:
       paths:
       - backend:
           serviceName: frontend-app
-          servicePort: 80
+          servicePort: 8080
