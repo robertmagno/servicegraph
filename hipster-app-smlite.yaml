@@ -47,6 +47,10 @@ spec:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:8080"]
         env:
+        - name: DISABLE_TRACING
+          value: "1"
+        - name: DISABLE_PROFILER
+          value: "1"
         - name: ENABLE_PROFILER
           value: "0"
         resources:
@@ -192,6 +196,10 @@ spec:
           value: "8080"
         - name: PRODUCT_CATALOG_SERVICE_ADDR
           value: "productcatalogservice:3550"
+        - name: DISABLE_TRACING
+          value: "1"
+        - name: DISABLE_PROFILER
+          value: "1"  
         - name: ENABLE_PROFILER
           value: "0"
         resources:
