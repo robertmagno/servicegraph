@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-redis-cart
+  annotations:
+     kubernetes.io/ingress.class: "tier-2-cpx"
+     ingress.citrix.com/insecure-service-type: "tcp"
+     ingress.citrix.com/insecure-port: "6379"
+spec:
+    backend:
+        serviceName: redis-cart-app
+        servicePort: 6379
