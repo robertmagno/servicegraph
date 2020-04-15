@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-frontend-ingress
+  annotations:
+   kubernetes.io/ingress.class: "tier-2-cpx"
+spec:
+  rules:
+  - host: frontend.default.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          serviceName: frontend-app
+          servicePort: 80
+  - host: frontend
+    http:
+      paths:
+      - backend:
+          serviceName: frontend-app
+          servicePort: 80

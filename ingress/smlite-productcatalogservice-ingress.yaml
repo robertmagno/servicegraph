@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: smlite-productcatalogservice
+  annotations:
+     kubernetes.io/ingress.class: "tier-2-cpx"
+     ingress.citrix.com/insecure-service-type: "tcp"
+     ingress.citrix.com/insecure-port: "3550"
+spec:
+    backend:
+        serviceName: productcatalogservice-app
+        servicePort: 3550
