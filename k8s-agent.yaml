@@ -1,0 +1,182 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: On-prem-k8s-Agent-TME
+spec:
+  selector:
+    matchLabels:
+      app: On-prem-k8s-Agent-TME
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: On-prem-k8s-Agent-TME
+        tier: backend
+    spec:
+      containers:
+
+        - name: On-prem-k8s-Agent-TME
+          image: quay.io/citrix/adm-agent:latest
+          imagePullPolicy: Always
+
+          env:
+          - name: IP
+            value: On-prem-k8s-Agent-TME
+
+          - name: APP_ID
+            value: On-prem-k8s-Agent-TME
+
+          - name: DEPL
+            value: "service"
+
+          - name: ORCH
+            value: "Kubernetes"
+
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          securityContext:
+            capabilities:
+              add:
+               - NET_ADMIN
+
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 80
+
+            - name: https
+              protocol: TCP
+              containerPort: 443
+
+            - name: lichb
+              protocol: TCP
+              containerPort: 27000
+
+            - name: lic
+              protocol: TCP
+              containerPort: 7279
+              
+            - name: snmp
+              protocol: UDP
+              containerPort: 162
+              
+            - name: syslog
+              protocol: UDP
+              containerPort: 514
+
+            - name: ipfix
+              protocol: UDP
+              containerPort: 4739
+
+            - name: ulfd
+              protocol: TCP
+              containerPort: 5557
+
+          volumeMounts:
+            - name: secret-volume
+              mountPath: /etc/adm_agent/secret
+            - name: config-volume
+              mountPath: /etc/adm_agent/config
+
+
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: On-prem-k8s-Agent-TME
+        - name: config-volume
+          configMap:
+            name: On-prem-k8s-Agent-TME
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: On-prem-k8s-Agent-TME
+  labels:
+    app: On-prem-k8s-Agent-TME
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 443
+    targetPort: 443
+    name: https
+  - port: 162
+    targetPort: 162
+    protocol: UDP
+    name: snmp
+  - port: 514
+    targetPort: 514
+    name: syslog
+    protocol: UDP
+  - port: 4739
+    targetPort: 4739
+    name: ipfix
+    protocol: UDP
+  - port: 5557
+    targetPort: 5557
+    name: ulfd
+    protocol: TCP
+  - port: 27000
+    targetPort: 27000
+    name: lichb
+    protocol: TCP
+  - port: 7279
+    targetPort: 7279
+    name: lic
+    protocol: TCP
+  selector:
+    app: On-prem-k8s-Agent-TME
+    tier: backend
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: On-prem-k8s-Agent-TME
+data:
+  db_key.conf: PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PGRic2VydmVya2V5PjxrZXk+MTVCNzE1RDgyN0VEOTZCNUQ2RkMxMkRFOUJGNUQxNzc8L2tleT48L2Ric2VydmVya2V5Pg==
+  private.pem: UEZKVFFVdGxlVlpoYkhWbFBqeE5iMlIxYkhWelBuRkpSMXBHTWxSNVVIbHFPWE5PYW1JMWRWTjJkMmN5ZDA4d2NrOHdTbnBrTlc1UmNWaHVhazFvT0RSUFdrUlJiRGx1Y210aFVpOUljR0ZDV21KV04zTXpTMU4zYVVSQ0wyRmphbFZsT1RoUGMwbDFlbWRCY3pWQlFUZENUVWxQUVhJcmFUWXJRVXh1UTJaclVHZHBSRnBzVlVweWF6VlFjRUk0V0dSc2VIRTJhRzFHTkU5NWNuZEtXVFpITmtGMVdrdE5iVTg1VDJWVlpTdDJXbFJIUmpKSmVqSlZaRFJ2WkdweFkyUXZTalZYUW5wUmNEaFpSbWRaWjBSTkwyUlhWVUZzVjFwdFZIazNUbUpXT1dsM1ZVUTVZVlpWV1RkbVZIQjNlbXR5UXpKeVlraDFaWFJ0UkdkQmJFNXhWSEZrVjJWalJGQnFkV2hNVVN0M1RWbGpSVEJ4T0VvdlNIUXdRVUZHTkhrckszVnJhMlpPT0dkc1FsWnhSVTV6VG1ZcmRYUlBMMlJPT1dwbWRuTlpPWGc1UzJwelkwUTRZbEl2UWt0Rk1tTXlkMk16VGxSWlZHZDVjVlk0TjNRNU16ZDZabnBEY2pWeVVUMDlQQzlOYjJSMWJIVnpQanhGZUhCdmJtVnVkRDVCVVVGQ1BDOUZlSEJ2Ym1WdWRENDhVRDR6VVdWamQwNURabTVtTWtnMFVrbExTeTlqZFRGM1JVbFNXamhrVWtKRmJ6azRkR2c1VTJKNlFrczFjVXBVT1hBclkwdE9TVGxrWlVoa1ZFOWFVaXRuYzBOU2RFZHdUa3M0TjJsTWJscDRZVmRWTUZZclVHSk1NMjlDYWpsaWRHaHBUVTAzZEdKaVRsQkRMMUZHV1RCR2RXZExSRWM1VURSSlYwWllNQzlPTmxSQ1kydGlSR2x0Vm01MmFqQlBWakIyWm5kb09FVmlVMGN4WW14bVRVdHNSRFJKU21KUFZHRTBSekE5UEM5UVBqeFJQbmQ1Y1daTU5WQlhOR2t3TWl0VlMzSnFhRTlZVlhncmMxTllSbEZYYzJaUE5saERkMlJXWkZGeWNGbHdMeTkwWVhvcldsVTRkazR4VVdReVMybHNSV1l4TUhRMmNFMHhPRFpHUjBkVE1XaDNZWFJWVUhWMVpHWXlTa3RpTDAwd2VWVlNaWE5MUlZKallVdG1NRGRZTTJZMlJYTXZZVGxaZWtsWVNGUjZTR1JGU0VaUFdERXlSR0ZyVUZkdk0wTjNlSE5ST1ZSc0szSm1jalprV0VRMVMwUktTRloxWW5aMWJFNXJSVDA4TDFFK1BFUlFQbTVvWTJsNFJIRjZORUpKUm5wVVRGVXJZWFJpTkd0aFNIWjRlRmRzTW1aaGMwcHVWVE0zTjFSR1UyTllTSEp6YW5Sd1Qzb3hZek50VFVadlZXOW1iV3RQYW1ocWJsSXhOaTgyVjJkdWMxQkdWRFZuTWxCb1RuWnpRalpQTkV0VU9ERjRRV3hPWjNsbk9GRnhWblk0VWxaTmVqQXlkalJITWs5V1NHaDFkVk56VGxvMVlqSTVaMDVEVmtOc2JYSldlamhoZEZWTWQweEpjSFYwV2xOM2IwSmxNekJpT1hKdlpETXlWVDA4TDBSUVBqeEVVVDVVTDJKVGNXdG1SWEl6T0daSGVHNDFLMGxwUjFwQlUwTk1jMVpEZVhrNE5qQXJUR05MWm1aUmEzWm1jakZZY0VSU2VFNHdhM1ZoTVd0SWMxcElTSE5KZEUxdE1GRnViaTlTTmtNdmFWaGtLeXRCWVRoSWVsSldlbEZMYXpkMmRWVk9hVEpuTWtFM1MxaG5ZMVJFTkhWWWFHcElkV3hzZURWTWNXSlplRTV1U2tOdFNXeDNTbFp4WlVOS2RsRlhZa3RLVjFoSFRtMVRRbkZvVEVOV1VuTlBjVWt5UlRWbGQzUlZVVVU5UEM5RVVUNDhTVzUyWlhKelpWRStSalZFY0VsV01VSTNOMHRsZGxwUGJqWlJlSEZFUW1SQmIyUTFVamxJTkVaWVdIbDZVbFo2WVdkNlpuVjZObVZRZUVSQ1oxZHRNamh3YTNGNFFWbFpNRzFrVGtaVldGcHlTRE5vV0VoNWJYSjZUM0pKWmxOSmJFZzJhUzlvZVUwNFJYVklVMmRRSzJZME4wTkJOM3AzWVZnd1lYaFJUbmhxTW10VE9VMXdlaXRzYTBGME4wSjJTMU5pYjBrMmRUaFpjVkpCY0ZOUVRUbG5iMDFDYlhwU05sTk5OVlZJYzBwVVNGQnZQVHd2U1c1MlpYSnpaVkUrUEVRK1MxaFFTVXd5VFdJelRVY3JkSFJUUTA1RGFYQjFMMnRYUlRFdmVIaEpkbmxaY0VST1NUTlNaMFJGUWpaa1pHZEhVbkkwZDJ4c1VFWkVNQ3RGT0VWNlluY3JUMWh6WTJ0TlluWXJRMnhtTlc1YVRFeGFUVE5UVUZSNE5WTkdRbU5zWm5sRGJtSm1PVFI1Y0VaRllWZFRabGxuU2pJMlJsVkpha2R5TW1WblpWQlFlVTlZUzJsalJEaEtiRUpSY2tGdWRUQnljVXRuUlZkSEt6UklRa3N3ZEVoTWJ6TllZbXBUVlVwalVtWk5iamMyY1RkNGNIWXlVR05LUnpWV1lWaEVSRVZvVEdsVFFUVXZLelU1UmpCaVEzcG5Wbk5XTTJFeGJqbHRWa2MxYUhGT1pVcHVjbWgzZERaQlNGVlpZWFZOUW1jMmIwTldUMkl4TkRrclkwaGtWMnhxZVhwa1dXVndiVzlDYVhOTFdqTkpaakJDVjNWcWRrbzVjemh2YVRjMEwyTk5hbTlCVTIxbldYUjZlRE5UVEhGNWRVbG1aVXhQYmtWM1FVUjNTSFJ3WkZoVE5sUkRUbTFVTjNWbVdEaE5NbVJ4ZFVGUlBUMDhMMFErUEM5U1UwRkxaWGxXWVd4MVpUND0=
+  public.pem: UEZKVFFVdGxlVlpoYkhWbFBqeE5iMlIxYkhWelBuRkpSMXBHTWxSNVVIbHFPWE5PYW1JMWRWTjJkMmN5ZDA4d2NrOHdTbnBrTlc1UmNWaHVhazFvT0RSUFdrUlJiRGx1Y210aFVpOUljR0ZDV21KV04zTXpTMU4zYVVSQ0wyRmphbFZsT1RoUGMwbDFlbWRCY3pWQlFUZENUVWxQUVhJcmFUWXJRVXh1UTJaclVHZHBSRnBzVlVweWF6VlFjRUk0V0dSc2VIRTJhRzFHTkU5NWNuZEtXVFpITmtGMVdrdE5iVTg1VDJWVlpTdDJXbFJIUmpKSmVqSlZaRFJ2WkdweFkyUXZTalZYUW5wUmNEaFpSbWRaWjBSTkwyUlhWVUZzVjFwdFZIazNUbUpXT1dsM1ZVUTVZVlpWV1RkbVZIQjNlbXR5UXpKeVlraDFaWFJ0UkdkQmJFNXhWSEZrVjJWalJGQnFkV2hNVVN0M1RWbGpSVEJ4T0VvdlNIUXdRVUZHTkhrckszVnJhMlpPT0dkc1FsWnhSVTV6VG1ZcmRYUlBMMlJPT1dwbWRuTlpPWGc1UzJwelkwUTRZbEl2UWt0Rk1tTXlkMk16VGxSWlZHZDVjVlk0TjNRNU16ZDZabnBEY2pWeVVUMDlQQzlOYjJSMWJIVnpQanhGZUhCdmJtVnVkRDVCVVVGQ1BDOUZlSEJ2Ym1WdWRENDhMMUpUUVV0bGVWWmhiSFZsUGc9PQ==
+  password: NTM2NTM5OWVjZDg0ODk3ZDRhNzJhYmFkZmUzYzUzYzJiYzljNDliNThmYmJhMDJlMjllZDFkOTM5MDk1MzdkZg==
+---
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: On-prem-k8s-Agent-TME
+data:
+  agent.conf: |
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <mps_agent>
+    <uuid>#uuid</uuid>
+    <url>railay.agent.adm.cloud.com</url>
+    <customerid>a16588ca06a8588607f3695622898f7807294e3711e3b4841f36dab80ed4b13e</customerid>
+    <instanceid>7cf14895e1ff79569101922d09672aa6e9da6cd7419d12b3f65e8310a66e0e82053861bcf938e3ad89a63aa0a0902277235f6f9dc1af2b07ee507d6957e61ac5</instanceid>
+    <servicename>f555c373fe3157acf3f38d8bee3319ea20beaaac2bc0eae02cb8fcd5e2250623</servicename>
+    <download_service_url>download.citrixnetworkapi.net</download_service_url>
+    <abdp_url>railay.agent.adm.cloud.com</abdp_url>
+    <msg_router_url>railay.agent.adm.cloud.com</msg_router_url>
+    </mps_agent>
+  proxy.conf: |
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <proxy>
+    <proxy_server_ip>#proxy_server_ip</proxy_server_ip>
+    <proxy_user>#proxy_server_username</proxy_user>
+    <proxy_password>#proxy_server_password</proxy_password>
+    <proxy_server_port>#proxy_server_port</proxy_server_port>
+    </proxy>
